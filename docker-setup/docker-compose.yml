@@ -1,0 +1,43 @@
+version: "3.9"
+
+volumes:
+  financial-information-service:
+
+services:
+  database:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: "exit 0"
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 5s
+
+  financial-information-service:
+    build: ../financial-information-service
+    restart: always
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: database
+    depends_on:
+      database:
+        condition: service_healthy
+    volumes:
+      - ../financial-information-service:/home/app
+    working_dir: /home/app
+    command: sh -c "npm install && npm run migrate && npm run dev"
+    ports:
+      - 3000:3000
+    healthcheck:
+      test: "exit 0"
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 30s
