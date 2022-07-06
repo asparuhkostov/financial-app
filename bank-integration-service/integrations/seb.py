@@ -21,23 +21,6 @@ API_AUTH_URL = 'auth/v3/authorizations'
 API_TOKEN_URL = 'auth/v3/tokens'
 
 
-def check_for_existing_bank_connection(db_conn, personal_id):
-    conn = db_conn.cursor()
-    # TO-DO: rewrite this to be safe, this opens the db up to SQL injections as is right now 💀
-    res = conn.execute(f'SELECT EXISTS(select 1 from bank_connections where customer_id = {personal_id})')
-    conn.close()
-    return res
-
-
-def create_bank_connection(db_conn, personal_id):
-    conn = db_conn.cursor()
-    bank_conn_id = uuid5()
-    # TO-DO: rewrite this to use Alchemy ORM or similar, to avoid SQL injection risks and to improve readability
-    conn.execute(f'INSERT INTO \'bank_connections\' VALUES({bank_conn_id}, {personal_id}, NULL, NULL)')
-    conn.close()
-    return bank_conn_id
-
-
 def create_authorization_request():
     url = f"{API_BASE_URL}/{API_AUTH_URL}"
     data = {
@@ -45,9 +28,9 @@ def create_authorization_request():
         "scope": "psd2_accounts psd2_payments",
         "start_mode": "ast"
     }
-    r = requests.post(url, data)
+    r = requests.post(url, json=data)
     d = r.json()
-    return d["auth_request_id"]
+    return d["auth_req_id"]
 
 
 def get_bankid_autostart_token(auth_req_id):
@@ -57,33 +40,29 @@ def get_bankid_autostart_token(auth_req_id):
 
 
 class SEB(TemplateProvider):
-    def init_auth(self, personal_id):
-        if check_for_existing_bank_connection(self.db_connection):
-            return
-        create_bank_connection(self.db_connection, personal_id)
+    def init_auth(self):
         auth_req_id = create_authorization_request()
-        self.db_connection.close()
         return {
             "auth_request_id": auth_req_id,
             "bank_id_autostart_token": get_bankid_autostart_token(auth_req_id)
         }
 
   
-    def check_for_bankid_login_completion(bank_id_autostart_token):
-        res = requests.get(f"{API_BASE_URL}/{API_AUTH_URL}")
+    def check_for_login_completion(self, auth_req_id):
+        res = requests.get(f"{API_BASE_URL}/{API_AUTH_URL}/{auth_req_id}")
         if res.json()["status"] == "COMPLETE":
-            return True
+            return {"is_complete": True}
         else:
-            return False
+            return {"is_complete": False}
 
 
-    def get_access_token(auth_req_id):
+    def get_access_token(self, auth_req_id):
         data = {
             "client_id": SEB_CLIENT_ID,
             "client_secret": SEB_CLIENT_SECRET,
             "auth_req_id": auth_req_id,
         }
-        res = requests.post(f"{API_BASE_URL}/{API_TOKEN_URL}", data)
+        res = requests.post(f"{API_BASE_URL}/{API_TOKEN_URL}", json=data)
         return res.json()
 
 

@@ -15,17 +15,23 @@ integrations_map = {
 def create_app(test_config = None):
     app = Flask(__name__)
 
-    @app.route("/connect/<bank>/<personal_id>")
-    def connect(bank, personal_id):
-        integration = integrations_map[bank]
-        integration_instance = integration(personal_id)
-        return integration_instance.init_auth()
-    
-    @app.route("/poll/<bank>/<bank_id_autostart_token>")
-    def poll(bank, bank_id_autostart_token):
+    @app.route("/connect/<bank>")
+    def connect(bank):
         integration = integrations_map[bank]
         integration_instance = integration()
-        integration_instance.poll_for_bank_id_confirmation(bank_id_autostart_token)
+        return integration_instance.init_auth()
+    
+    @app.route("/check/<bank>/<auth_req_id>")
+    def check(bank, auth_req_id):
+        integration = integrations_map[bank]
+        integration_instance = integration()
+        return integration_instance.check_for_login_completion(auth_req_id)
+    
+    @app.route("/get_access_token/<bank>/<auth_req_id>")
+    def get_access_token(bank, auth_req_id):
+        integration = integrations_map[bank]
+        integration_instance = integration()
+        return integration_instance.get_access_token(auth_req_id)
 
     @app.route("/oauth/<state>")
     def oauth(state):

@@ -1,16 +1,7 @@
-import os
-import psycopg2
-
-DB_HOST = os.environ["DB_HOST"]
-DB_USERNAME = os.environ["DB_USERNAME"]
-DB_PASSWORD = os.environ["DB_PASSWORD"]
-DB_NAME = os.environ["DB_NAME"]
-
 class TemplateProvider:
-    def __init__(self, personal_id):
-        self.personal_id = personal_id
-        self.db_connection = psycopg2.connect(f'host={DB_HOST} dbname={DB_NAME} user={DB_USERNAME} password={DB_PASSWORD}')
-
+    def __init__(self):
+        pass
+    
     def init_auth():
         pass
 
