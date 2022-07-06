@@ -1,14 +1,15 @@
-from venv import create
-from template import TemplateProvider
-from requests import requests
+import os
+import sys
+import requests
 from uuid import uuid5
 
 
-import os
-import sys
-integration_dir = os.path.dirname(__file__)
-utils_dir = os.path.join(integration_dir, "..", "..", "utils")
+utils_dir = os.getcwd() + "/utils"
 sys.path.append(utils_dir)
+integrations_dir = os.getcwd() + "/integrations"
+sys.path.append(integrations_dir)
+
+from integrations.template import TemplateProvider
 
 
 SEB_CLIENT_ID = os.environ["SEB_CLIENT_ID"]
@@ -22,6 +23,7 @@ API_TOKEN_URL = 'auth/v3/tokens'
 
 def check_for_existing_bank_connection(db_conn, personal_id):
     conn = db_conn.cursor()
+    # TO-DO: rewrite this to be safe, this opens the db up to SQL injections as is right now 💀
     res = conn.execute(f'SELECT EXISTS(select 1 from bank_connections where customer_id = {personal_id})')
     conn.close()
     return res
@@ -30,6 +32,7 @@ def check_for_existing_bank_connection(db_conn, personal_id):
 def create_bank_connection(db_conn, personal_id):
     conn = db_conn.cursor()
     bank_conn_id = uuid5()
+    # TO-DO: rewrite this to use Alchemy ORM or similar, to avoid SQL injection risks and to improve readability
     conn.execute(f'INSERT INTO \'bank_connections\' VALUES({bank_conn_id}, {personal_id}, NULL, NULL)')
     conn.close()
     return bank_conn_id

@@ -2,7 +2,7 @@
 
 # About
 
-The purpose of this repository is to serve as a template or demo for a generic financials application, that allows for visualization and interaction of bank accounts, cards and payments.
+The purpose of this repository is to serve as a template or demo for a generic financials application, that allows for visualization of and interaction with bank accounts, cards and payments.
 
 ## Structure
 

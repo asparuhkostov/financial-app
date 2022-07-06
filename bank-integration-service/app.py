@@ -2,8 +2,10 @@ import sys
 import os
 from flask import Flask
 
-sys.path.append(f'{os.getcwd()}/server/integrations/seb.py')
-from seb import SEB
+
+sys.path.append(f'{os.getcwd()}/server/integrations')
+from integrations.seb import SEB
+
 
 integrations_map = {
     "seb": SEB
