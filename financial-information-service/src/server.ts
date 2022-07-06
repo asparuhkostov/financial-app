@@ -7,7 +7,11 @@ const WEB_SERVER_PORT = process.env.WEB_SERVER_PORT || 3000;
 const webServer: Express = express();
 
 async function setUpGraphQL() {
-  const apolloServer: ApolloServer = new ApolloServer({ typeDefs, resolvers });
+  const apolloServer: ApolloServer = new ApolloServer({
+    typeDefs,
+    resolvers,
+    context: () => ({}),
+  });
   await apolloServer.start();
   apolloServer.applyMiddleware({ app: webServer });
 }

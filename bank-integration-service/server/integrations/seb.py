@@ -47,8 +47,8 @@ def create_authorization_request():
     return d["auth_request_id"]
 
 
-def get_bankid_autostart_token(auth_request_id):
-    r = requests.get(f"{API_BASE_URL}/{API_AUTH_URL}/{auth_request_id}")
+def get_bankid_autostart_token(auth_req_id):
+    r = requests.get(f"{API_BASE_URL}/{API_AUTH_URL}/{auth_req_id}")
     d = r.json()
     return d["autostart_token"]
 
@@ -58,24 +58,30 @@ class SEB(TemplateProvider):
         if check_for_existing_bank_connection(self.db_connection):
             return
         create_bank_connection(self.db_connection, personal_id)
-        auth_request_id = create_authorization_request()
+        auth_req_id = create_authorization_request()
         self.db_connection.close()
-        return  get_bankid_autostart_token(auth_request_id)
+        return {
+            "auth_request_id": auth_req_id,
+            "bank_id_autostart_token": get_bankid_autostart_token(auth_req_id)
+        }
 
   
-    def poll_for_bank_id_confirmation(bank_id_autostart_token):
-        for i in range(30):
-            res = requests.get(f"{API_BASE_URL}/{API_AUTH_URL}")
-            if res.json()[]
+    def check_for_bankid_login_completion(bank_id_autostart_token):
+        res = requests.get(f"{API_BASE_URL}/{API_AUTH_URL}")
+        if res.json()["status"] == "COMPLETE":
+            return True
+        else:
+            return False
 
 
-    def get_access_token():
+    def get_access_token(auth_req_id):
         data = {
             "client_id": SEB_CLIENT_ID,
             "client_secret": SEB_CLIENT_SECRET,
-            "auth_req_id": "",
+            "auth_req_id": auth_req_id,
         }
         res = requests.post(f"{API_BASE_URL}/{API_TOKEN_URL}", data)
+        return res.json()
 
 
         
