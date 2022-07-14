@@ -25,7 +25,7 @@ export default gql`
   """
   type BankConnection {
     id: ID
-    customer: ID
+    customerNationalIdentificationNumber: String
     bank: SupportedBank
     authToken: String
     refreshToken: String

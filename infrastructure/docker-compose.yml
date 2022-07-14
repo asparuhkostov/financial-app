@@ -2,6 +2,7 @@ version: "3.9"
 
 volumes:
   financial-information-service:
+  bank-integration-service:
 
 services:
   database:
@@ -19,13 +20,42 @@ services:
       retries: 3
       start_period: 5s
 
+  bank-integration-service:
+    image: python:3.8-alpine
+    restart: always
+    environment:
+      FLASK_ENV: development
+      DB_HOST: database
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: financial
+      SEB_CLIENT_ID: your_client_id_here
+      SEB_CLIENT_SECRET: your_client_secret_here
+    depends_on:
+      database:
+        condition: service_healthy
+    volumes:
+      - ../bank-integration-service:/home/app
+    working_dir: /home/app
+    command: sh -c "apk add build-base && pip install -r requirements.txt && python app.py"
+    ports:
+      - 5000:5000
+    healthcheck:
+      test: "exit 0"
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 30s
+
   financial-information-service:
     image: node:16-alpine
     restart: always
     environment:
       WEB_SERVER_PORT: 4000
+      BANK_INTEGRATION_SERVICE_URL: bank-integration-service:5000
       DB_USER: postgres
       DB_PASSWORD: postgres
+      DB_NAME: main
       DB_HOST: database
     depends_on:
       database:

@@ -1,6 +1,11 @@
 class TemplateProvider:
-    def __init__(self):
-        pass
+    db = None
+    customer_national_identification_number = None
+
+    def __init__(self, db, customer_national_identification_number = None):
+        self.db = db
+        if customer_national_identification_number:
+            self.customer_national_identification_number = customer_national_identification_number
     
     def init_auth():
         pass

@@ -6,19 +6,18 @@ The purpose of this repository is to serve as a template or demo for a generic f
 
 ## Structure
 
-- `bank-integration-service` is a Python Flask web server that interacts with bank PSD2 apis. It requires at least registered apps in said banks' sandbox environments. Currently only connected to the Swedish SEB bank (and then not fully, only partial auth support exists as of now, but the general structure is in place).
-- `infrastructure` contains a Docker based means of spinning up this whole project, including a PostgreSQL database. Also unfinished, as it only supports the `financial-information-service` and database as of the writing of this document.
-- `financial-information-service` is a NodeJS/ExpressJS/GraphQL/ObjectionJS back-end, towards which a front-end app would make calls for fetching. This back-end in turn relies on the `bank-integration-service` for interfacing with the actual bank PSD2 apis. The purpose of this back-end service is only to manage the customers of your app and their information.
+- `bank-integration-service` is a Python Flask/AlchemySQL web server that interacts with bank PSD2 APIs. It requires at least registered apps in said banks' sandbox environments. Currently only connected to the Swedish SEB bank.
+- `infrastructure` contains a Docker based means of spinning up this whole project, including a PostgreSQL database.
+- `financial-information-service` is a NodeJS/ExpressJS/GraphQL/ObjectionJS back-end, towards which a front-end app would make calls for fetching information. This back-end in turn relies on the `bank-integration-service` for interfacing with the actual bank PSD2 apis. The purpose of this back-end service is only to manage the customers of your app and their information.
 
 ## TO-DO:
 
 - In `bank-integration-service`
-  - Finish the SEB integration - auth, account and card account information fetching.
-  - Payment initialization.
-  - Work on the file/project structure.
+  - Add SEB account information fetching.
+  - Add SEB payment initialization.
 - In `infrastructure`
-  - Add the `bank-integration-service` as a container with its own volume.
   - Some volume caching and better secrets management, from, say, .env files instead of fields in the docker-compose YML file would be next too.
+  - Fixes on the `bank-integration-service container` are required, right now I run said service outside the Docker env with `python app.py` after exporting the env variables in my terminal session.
 - In `financial-information-service`
   - GraphQL resolvers and ORM models need to be completed.
   - Data loaders for more efficient interactions with the db and faster loading times.
@@ -31,5 +30,8 @@ The purpose of this repository is to serve as a template or demo for a generic f
 
 ## Running:
 
-1. `bank-integration-service`: `flask run`
-2. `infrastructure`: First, start only `database` by running `docker-compose up database`, then run the database setup script in the `scripts` folder by `./scripts/setup_database.sh`. Afterwards you can run `docker-compose up database financial-information-service`.
+In `infrastructure`:
+
+1. Start only `database` by running `docker-compose up database`,
+2. then run the database setup script in the `scripts` folder by `./scripts/setup_database.sh`.
+3. Afterwards you can run `docker-compose up database financial-information-service bank-integration-service` to bring everything up.
