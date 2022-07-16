@@ -18,12 +18,14 @@ SEB_CLIENT_SECRET = os.environ["SEB_CLIENT_SECRET"]
 
 
 API_BASE_URL = 'https://api-sandbox.sebgroup.com'
-API_AUTH_URL = 'auth/v3/authorizations'
-API_TOKEN_URL = 'auth/v3/tokens'
+API_AUTH_ENDPOINT = 'auth/v3/authorizations'
+API_TOKEN_ENDPOINT = 'auth/v3/tokens'
+API_ACCOUNTS_ENDPOINT = '/ais/v7/identified2'
+
 
 
 def create_authorization_request():
-    url = f"{API_BASE_URL}/{API_AUTH_URL}"
+    url = f"{API_BASE_URL}/{API_AUTH_ENDPOINT}"
     data = {
         "client_id": SEB_CLIENT_ID,
         "scope": "psd2_accounts psd2_payments",
@@ -35,7 +37,7 @@ def create_authorization_request():
 
 
 def get_bankid_autostart_token(auth_req_id):
-    r = requests.get(f"{API_BASE_URL}/{API_AUTH_URL}/{auth_req_id}")
+    r = requests.get(f"{API_BASE_URL}/{API_AUTH_ENDPOINT}/{auth_req_id}")
     d = r.json()
     return d["autostart_token"]
 
@@ -46,7 +48,7 @@ def get_token_data(auth_req_id):
         "client_secret": SEB_CLIENT_SECRET,
         "auth_req_id": auth_req_id,
         }
-        res = requests.post(f"{API_BASE_URL}/{API_TOKEN_URL}", json=data)
+        res = requests.post(f"{API_BASE_URL}/{API_TOKEN_ENDPOINT}", json=data)
         return res.json()
 
 class SEB(TemplateProvider):
@@ -59,7 +61,7 @@ class SEB(TemplateProvider):
 
   
     def check_for_login_completion(self, auth_req_id):
-        res = requests.get(f"{API_BASE_URL}/{API_AUTH_URL}/{auth_req_id}")
+        res = requests.get(f"{API_BASE_URL}/{API_AUTH_ENDPOINT}/{auth_req_id}")
         return {"is_complete": True if res.json()["status"] == "COMPLETE" else False}
 
 
@@ -75,6 +77,17 @@ class SEB(TemplateProvider):
         self.db.session.add(bank_connection)
         self.db.session.commit()
         return {"success": True}
+    
+    def get_accounts(self):
+        bank_connection = BankConnections.query.filter_by(customer_national_identification_number=self.customer_national_identification_number).first()
+        headers = {
+            "Authorization": f"Bearer {bank_connection.access_token}",
+            "X-Request-ID": uuid4().bytes,
+            "Accept": "*/*",
+            "Connection": "keep-alive"
+        }
+        res = requests.get(f"{API_BASE_URL}/{API_ACCOUNTS_ENDPOINT}", headers=headers)
+        return res.json()
 
 
         

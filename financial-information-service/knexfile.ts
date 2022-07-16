@@ -2,13 +2,13 @@
  * @type { Object.<string, import("knex").Knex.Config> }
  */
 
-export default {
+module.exports = {
   development: {
-    client: "postgresql",
+    client: "pg",
     connection: {
-      host: "database",
-      database: "financial",
-      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME,
+      user: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
     },
     pool: {
@@ -21,7 +21,7 @@ export default {
   },
 
   staging: {
-    client: "postgresql",
+    client: "pg",
     connection: {
       database: "financial",
       user: "username",
@@ -37,7 +37,7 @@ export default {
   },
 
   production: {
-    client: "postgresql",
+    client: "pg",
     connection: {
       database: "financial",
       user: "username",

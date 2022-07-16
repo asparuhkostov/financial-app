@@ -38,5 +38,10 @@ def create_bank_connection(bank, auth_req_id, customer_national_identification_n
     connection_id = integration_instance.create_bank_connection(auth_req_id)
     return {"success": True if connection_id else False}
 
+@app.route("/get_bank_accounts/<bank>/<customer_national_identification_number>")
+def get_bank_accounts(bank, customer_national_identification_number):
+    integration = integrations_map[bank]
+    integration_instance = integration(db, customer_national_identification_number)
+    return integration_instance.get_accounts()
 
 app.run(debug = True)

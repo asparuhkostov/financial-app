@@ -14,36 +14,32 @@ export default gql`
 
   type Customer {
     id: ID
-    countryOfResidence: SupportedCountry
-    nationalIdentificationNumber: String
-    """
-    bankAccounts: [BankAccount]
-    bankConnections: [BankConnection]
-    """
+    country_of_residence: SupportedCountry
+    national_identification_number: String
+    bank_accounts: [BankAccount]
+    bank_connections: [BankConnection]
   }
 
-  """
   type BankConnection {
     id: ID
-    customerNationalIdentificationNumber: String
+    customer_national_identification_number: String
     bank: SupportedBank
-    authToken: String
-    refreshToken: String
+    auth_token: String
+    refresh_token: String
   }
 
   type BankAccount {
     id: ID
-    externalId: String
-    bankConnection: ID
-    balance: Float
+    external_id: String
+    customer_id: ID
+    bank_connection: ID
     transactions: [BankAccountTransaction]
   }
 
   type BankAccountTransaction {
     id: ID
-    bankAccount: ID
+    bank_account: ID
   }
-  """
 
   type Query {
     customer(customerId: ID!): Customer

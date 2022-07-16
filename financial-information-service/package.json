@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "start": "node dist/server.js",
-    "dev": "concurrently \" npx tsc --watch \" \" nodemon -q dist/server.js \" ",
+    "dev": "concurrently \" npx tsc --watch \" \" nodemon -q dist/src/server.js \" ",
     "build": "npx tsc",
     "migrate": "npx tsc && cp -R ./migrations ./dist/migrations && knex migrate:latest --knexfile dist/knexfile.js",
     "test": "echo \"Error: no test specified\" && exit 1"
