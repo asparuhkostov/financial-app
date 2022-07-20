@@ -1,6 +1,7 @@
 version: "3.9"
 
 volumes:
+  database:
   financial-information-service:
   bank-integration-service:
 
@@ -13,6 +14,8 @@ services:
       - POSTGRES_PASSWORD=postgres
     ports:
       - 5432:5432
+    volumes:
+      - ./data:/var/lib/postgresql/data
     healthcheck:
       test: "exit 0"
       interval: 30s

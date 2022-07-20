@@ -20,7 +20,7 @@ SEB_CLIENT_SECRET = os.environ["SEB_CLIENT_SECRET"]
 API_BASE_URL = 'https://api-sandbox.sebgroup.com'
 API_AUTH_ENDPOINT = 'auth/v3/authorizations'
 API_TOKEN_ENDPOINT = 'auth/v3/tokens'
-API_ACCOUNTS_ENDPOINT = '/ais/v7/identified2'
+API_ACCOUNTS_ENDPOINT = '/ais/v7/identified2/accounts'
 
 
 
@@ -65,6 +65,20 @@ class SEB(TemplateProvider):
         return {"is_complete": True if res.json()["status"] == "COMPLETE" else False}
 
 
+    def get_new_auth_tokens(self):
+        bank_connection = BankConnections.query.filter_by(customer_national_identification_number=self.customer_national_identification_number).first()
+        data = {
+        "client_id": SEB_CLIENT_ID,
+        "client_secret": SEB_CLIENT_SECRET,
+        "refresh_token": bank_connection.refresh_token,
+        }
+        res = requests.post(f"{API_BASE_URL}/{API_TOKEN_ENDPOINT}", json=data)
+        token_data = res.json()
+        BankConnections.access_token = token_data["access_token"]
+        BankConnections.refresh_token = token_data["refresh_token"]
+        self.db.session.commit()
+
+
     def create_bank_connection(self, auth_req_id):
         token_data = get_token_data(auth_req_id)
         bank_connection = BankConnections(
@@ -82,11 +96,10 @@ class SEB(TemplateProvider):
         bank_connection = BankConnections.query.filter_by(customer_national_identification_number=self.customer_national_identification_number).first()
         headers = {
             "Authorization": f"Bearer {bank_connection.access_token}",
-            "X-Request-ID": uuid4().bytes,
-            "Accept": "*/*",
-            "Connection": "keep-alive"
+            "X-Request-ID": str(uuid4()),
+            "Accept": "application/json",
         }
-        res = requests.get(f"{API_BASE_URL}/{API_ACCOUNTS_ENDPOINT}", headers=headers)
+        res = requests.get(f"{API_BASE_URL}/{API_ACCOUNTS_ENDPOINT}", headers=headers, data={})
         return res.json()
 
 

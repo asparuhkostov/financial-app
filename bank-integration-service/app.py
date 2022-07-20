@@ -31,7 +31,7 @@ def check(bank, auth_req_id):
     integration_instance = integration(db)
     return integration_instance.check_for_login_completion(auth_req_id)
 
-@app.route("/create_bank_connection/<bank>/<auth_req_id>/customer_national_identification_number")
+@app.route("/create_bank_connection/<bank>/<auth_req_id>/<customer_national_identification_number>")
 def create_bank_connection(bank, auth_req_id, customer_national_identification_number):
     integration = integrations_map[bank]
     integration_instance = integration(db, customer_national_identification_number)
