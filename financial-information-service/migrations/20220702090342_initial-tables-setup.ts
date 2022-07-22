@@ -1,8 +1,10 @@
+import { Knex } from "knex";
+
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.up = function (knex) {
+exports.up = function (knex: Knex) {
   return Promise.all([
     knex.schema.createTable("customers", (table) => {
       table.uuid("id").primary();
@@ -33,7 +35,7 @@ exports.up = function (knex) {
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.down = async function (knex) {
+exports.down = async function (knex: Knex) {
   return Promise.all(
     [
       "customers",

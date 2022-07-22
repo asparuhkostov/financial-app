@@ -11,6 +11,7 @@ sys.path.append(models_dir)
 
 from integrations.template import TemplateProvider
 from models.BankConnections import BankConnections
+from models.BankAccounts import BankAccounts
 
 
 SEB_CLIENT_ID = os.environ["SEB_CLIENT_ID"]
@@ -20,7 +21,7 @@ SEB_CLIENT_SECRET = os.environ["SEB_CLIENT_SECRET"]
 API_BASE_URL = 'https://api-sandbox.sebgroup.com'
 API_AUTH_ENDPOINT = 'auth/v3/authorizations'
 API_TOKEN_ENDPOINT = 'auth/v3/tokens'
-API_ACCOUNTS_ENDPOINT = '/ais/v7/identified2/accounts'
+API_ACCOUNTS_ENDPOINT = 'ais/v7/identified2/accounts'
 
 
 
@@ -99,8 +100,20 @@ class SEB(TemplateProvider):
             "X-Request-ID": str(uuid4()),
             "Accept": "application/json",
         }
-        res = requests.get(f"{API_BASE_URL}/{API_ACCOUNTS_ENDPOINT}", headers=headers, data={})
-        return res.json()
+        res = requests.get(f"{API_BASE_URL}/{API_ACCOUNTS_ENDPOINT}", headers=headers)
+        accounts_data = res.json()
+        for i in accounts_data["accounts"]:
+            account = BankAccounts(
+                id = uuid4(),
+                bank="seb",
+                bank_connection_id = bank_connection.id,
+                name = res["accounts"][i].name,
+                currency = res["accounts"][i].currency,
+                iban = res["accounts"][i].iban
+            )
+            self.db.session.add(account)
+            self.db.session.commit()
+        return {"success": True}
 
 
         

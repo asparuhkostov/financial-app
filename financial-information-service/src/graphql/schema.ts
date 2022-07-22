@@ -12,6 +12,13 @@ export default gql`
     FI
   }
 
+  enum SupportedCurrency {
+    SEK
+    DKK
+    NOK
+    EUR
+  }
+
   type Customer {
     id: ID
     country_of_residence: SupportedCountry
@@ -30,9 +37,11 @@ export default gql`
 
   type BankAccount {
     id: ID
-    external_id: String
-    customer_id: ID
-    bank_connection: ID
+    bank_connection_id: ID
+    name: String
+    currency: SupportedCurrency
+    iban: String
+    bank: String
     transactions: [BankAccountTransaction]
   }
 

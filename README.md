@@ -22,11 +22,10 @@ In `infrastructure`:
 ## TO-DO 👷‍♂️:
 
 - In `bank-integration-service`
-  - Add SEB account information fetching.
   - Add SEB payment initialization.
+  - Add error handling to PSD2 integration components
 - In `infrastructure`
-  - Some volume caching and better secrets management, from, say, .env files instead of fields in the docker-compose YML file would be next too.
-  - Fixes on the `bank-integration-service container` are required, right now I run said service outside the Docker env with `python app.py` after exporting the env variables in my terminal session.
+  - Fixes on the `bank-integration-service container` are required, right now I run said service outside the Docker env with `python app.py`.
 - In `financial-information-service`
   - Data loaders for more efficient interactions with the db and faster loading times. E.g using this -> https://github.com/graphql/dataloader
   - Extend the base model to support common fields such as `created_at` upon row insertion and `update_at` upon row updates. E.g -> https://x-team.com/blog/automatic-timestamps-with-postgresql/
