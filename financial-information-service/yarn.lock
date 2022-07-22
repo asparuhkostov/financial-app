@@ -983,6 +983,11 @@
   dependencies:
     "function-bind" "^1.1.1"
 
+"helmet@^5.1.0":
+  "integrity" "sha512-klsunXs8rgNSZoaUrNeuCiWUxyc+wzucnEnFejUg3/A+CaF589k9qepLZZ1Jehnzig7YbD4hEuscGXuBY3fq+g=="
+  "resolved" "https://registry.npmjs.org/helmet/-/helmet-5.1.0.tgz"
+  "version" "5.1.0"
+
 "http-cache-semantics@^4.0.0":
   "integrity" "sha512-carPklcUh7ROWRK7Cv27RPtdhYhUsela/ue5/jKzjegVvXDqM2ILE9Q2BGn9JZJh1g87cp56su/FgQSzcWS8cQ=="
   "resolved" "https://registry.npmjs.org/http-cache-semantics/-/http-cache-semantics-4.1.0.tgz"

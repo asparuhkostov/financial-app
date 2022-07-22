@@ -60,6 +60,7 @@ services:
       DB_PASSWORD: postgres
       DB_NAME: financial
       DB_HOST: database
+      NODE_ENV: development
     depends_on:
       database:
         condition: service_healthy
