@@ -44,4 +44,4 @@ def get_bank_accounts(bank, customer_national_identification_number):
     integration_instance = integration(db, customer_national_identification_number)
     return integration_instance.get_accounts()
 
-app.run(debug = True)
+app.run(host="0.0.0.0", debug = True)
