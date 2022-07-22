@@ -28,5 +28,7 @@ In `infrastructure`:
   - Rate limiting and customer error messages to avoid software fingerprinting
   - Authentication and authorization for the GraphQL queries -> https://blog.logrocket.com/authorization-access-control-graphql/
   - Unit tests with Jest.
-- Overall
-  - Move the bank transactions table into either its own PostgreSQL instance or leave the entries unstructured and move it into a Cassandra database (which would also require some changes in how said transactions are served by the `financial-information-service`).
+
+## Roadmap 🛣
+
+- Introduce Cassandra for storing the bank account transactions.

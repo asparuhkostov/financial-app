@@ -37,6 +37,7 @@ export default gql`
 
   type BankAccount {
     id: ID
+    external_id: ID
     bank_connection_id: ID
     name: String
     currency: SupportedCurrency
@@ -47,7 +48,8 @@ export default gql`
 
   type BankAccountTransaction {
     id: ID
-    bank_account: ID
+    external_id: ID
+    bank_account_id: ID
   }
 
   type Query {
