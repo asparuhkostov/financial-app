@@ -1,3 +1,4 @@
-python-dotenv
-requests
 Flask-SQLAlchemy
+Flask-Migrate
+requests
+psycopg2-binary

@@ -16,6 +16,7 @@ services:
       - 5432:5432
     volumes:
       - ./data:/var/lib/postgresql/data
+    command: ""
     healthcheck:
       test: "exit 0"
       interval: 30s
@@ -32,15 +33,15 @@ services:
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
       DB_NAME: financial
-      SEB_CLIENT_ID: your_client_id_here
-      SEB_CLIENT_SECRET: your_client_secret_here
+      SEB_CLIENT_ID: id_here
+      SEB_CLIENT_SECRET: secret_here
     depends_on:
       database:
         condition: service_healthy
     volumes:
       - ../bank-integration-service:/home/app
     working_dir: /home/app
-    command: sh -c "apk add build-base && pip install -r requirements.txt && python app.py"
+    command: sh -c "apk add libpq-dev && apk add build-base && pip install -r requirements.txt && flask db upgrade && python app.py"
     ports:
       - 5000:5000
     healthcheck:
@@ -54,22 +55,23 @@ services:
     image: node:16-alpine
     restart: always
     environment:
-      WEB_SERVER_PORT: 4000
+      WEB_SERVER_PORT: 3000
       BANK_INTEGRATION_SERVICE_URL: bank-integration-service:5000
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
-      DB_NAME: financial
+      DB_NAME: application
       DB_HOST: database
       NODE_ENV: development
+      SERVER_SECRET: high_security
     depends_on:
       database:
         condition: service_healthy
     volumes:
       - ../financial-information-service:/home/app
     working_dir: /home/app
-    command: sh -c "npm install && npm run migrate && npm run build && npm run dev"
+    command: sh -c "npm install --global pnpm prisma && pnpm install && npx prisma db push && pnpm run dev"
     ports:
-      - 4000:4000
+      - 3000:3000
     healthcheck:
       test: "exit 0"
       interval: 30s
