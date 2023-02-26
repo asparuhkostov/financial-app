@@ -1,14 +1,18 @@
 from integrations.seb import SEB
+from lib.Aggregator import Aggregator
+
+
+from flask import Response, request
 from server import app, db
+
+
 import sys
 import os
 
 
-from flask import Response, request
-
-
 sys.path.append(f'{os.getcwd()}/server')
 sys.path.append(f'{os.getcwd()}/server/integrations')
+sys.path.append(f'{os.getcwd()}/lib')
 
 
 integrations_map = {
@@ -85,29 +89,8 @@ def populate(bank, national_identification_number):
 
 @ app.get("/get_financial_records/<national_identification_number>")
 def get_financial_records(national_identification_number):
-    financial_information = {}
-    connections = BankConnections.query.filter_by(
-        national_identification_number=self.national_identification_number
-    )
-    for c in connections:
-        accounts = BankAccount.query.filter_by(bank_connection_id=c.id)
-        for a in accounts:
-            transactions = BankAccountTransactions.query.filter_by(
-                bank_account_id=a.id)
-            serialised_transactions = []
-            for t in transactions:
-                serialised_transactions.append(t.serialize())
-
-            account_data = {
-                account: a.serialize(),
-                transactions: serialised_transactions.
-            }
-            if a.bank in financial_information:
-                financial_information[a.bank].append(account_data)
-            else:
-                financial_information[a.bank] = [
-                    account_data
-                ]
+    aggregator = Aggregator(national_identification_number)
+    financial_information = aggregator.compile_financial_information()
 
     return financial_information
 
