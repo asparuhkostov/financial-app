@@ -44,7 +44,9 @@ def verify_login():
     integration = integrations_map[bank]
     integration_instance = integration(db)
 
-    return integration_instance.verify_login(auth_req_id)
+    return integration_instance.verify_login(
+        auth_req_id
+    )
 
 
 @app.post("/connection")
@@ -52,15 +54,19 @@ def create_bank_connection():
     request_data = request.json
     bank = request_data["bank"]
     auth_req_id = request_data["auth_req_id"]
-    national_identification_number = request_data[
-        "national_identification_number"]
+    national_identification_number = request_data["national_identification_number"]
 
     integration = integrations_map[bank]
-    integration_instance = integration(db, national_identification_number)
+    integration_instance = integration(
+        db=db
+    )
 
     # TO-DO - make sure that users cannot have more than 1
     # connections per bank
-    return integration_instance.create_bank_connection(auth_req_id)
+    return integration_instance.create_bank_connection(
+        auth_req_id,
+        national_identification_number
+    )
 
 
 @app.put("/connection")
@@ -71,18 +77,28 @@ def refresh_bank_connection():
         "national_identification_number"]
 
     integration = integrations_map[bank]
-    integration_instance = integration(db, national_identification_number)
+    integration_instance = integration(
+        db=db
+    )
 
-    return integration_instance.refresh_bank_connection()
+    return integration_instance.refresh_bank_connection(
+        national_identification_number
+    )
 
 
-@app.get("/populate_financial_information_records/bank>/<national_identification_number>")
+@app.get("/populate_financial_information_records/<bank>/<national_identification_number>")
 def populate(bank, national_identification_number):
     integration = integrations_map[bank]
-    integration_instance = integration(db, national_identification_number)
-    integration_instance.get_bank_accounts()
-    integration_instance.get_bank_account_transactions(
-        bank_account_external_id)
+    integration_instance = integration(
+        db=db
+    )
+    accounts = integration_instance.get_bank_accounts(
+        national_identification_number)
+    for a in accounts:
+        integration_instance.get_bank_account_transactions(
+            a["external_id"],
+            national_identification_number
+        )
 
     return Response(status=200)
 
