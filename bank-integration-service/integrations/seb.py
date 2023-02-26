@@ -44,7 +44,6 @@ def get_bankid_autostart_token(auth_req_id):
 
 
 def get_token_data(auth_req_id):
-    print(SEB_CLIENT_ID, SEB_CLIENT_SECRET)
     data = {
         "client_id": SEB_CLIENT_ID,
         "client_secret": SEB_CLIENT_SECRET,

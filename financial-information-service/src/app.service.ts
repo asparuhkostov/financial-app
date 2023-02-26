@@ -3,6 +3,7 @@ import { hash, compare } from 'bcrypt';
 import { sign, verify } from 'jsonwebtoken';
 import { v4 } from 'uuid';
 import { dbClient } from './lib/db';
+import BankIntegrationServiceClient from './lib/bank_integration_service';
 
 @Injectable()
 export class AppService {
@@ -90,17 +91,15 @@ export class AppService {
     // TO-DO - sanitize headers before using in code
     if (decoded_auth?.data.identity === national_identification_number) {
       let res;
-      // TO-DO - add timeout
-      // TO-DO - extract communication with bank integration service into own client
-      await fetch(
-        `http://${process.env.BANK_INTEGRATION_SERVICE_URL}/get_financial_records/${national_identification_number}`,
-      )
-        .then((service_res) => {
-          res = service_res.json();
-        })
-        .catch((e) => {
-          response.status(HttpStatus.INTERNAL_SERVER_ERROR).send();
-        });
+      const client = new BankIntegrationServiceClient(
+        national_identification_number,
+      );
+      const query_result = await client.get_financial_overview();
+      if (query_result) {
+        res = query_result;
+      } else {
+        res = HttpStatus.INTERNAL_SERVER_ERROR;
+      }
       response.send(res);
     } else {
       response.status(HttpStatus.FORBIDDEN).send();
