@@ -2,7 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { hash, compare } from 'bcrypt';
 import { sign, verify } from 'jsonwebtoken';
 import { v4 } from 'uuid';
-import { dbClient } from './lib/db';
+import { dbClient } from './lib/database';
 import BankIntegrationServiceClient from './lib/bank_integration_service';
 
 @Injectable()

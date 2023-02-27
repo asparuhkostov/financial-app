@@ -28,14 +28,15 @@ class Aggregator:
                 bank_connection_id=c.id).all()
             for a in accounts:
                 transactions = BankAccountTransactions.query.filter_by(
-                    bank_account_id=a.id).all()
+                    external_bank_account_id=a.external_id
+                ).all()
                 serialised_transactions = []
                 for t in transactions:
                     serialised_transactions.append(t.serialize())
 
                 account_data = {
-                    account: a.serialize(),
-                    transactions: serialised_transactions
+                    "account": a.serialize(),
+                    "transactions": serialised_transactions
                 }
                 if a.bank in financial_information:
                     financial_information[a.bank].append(account_data)

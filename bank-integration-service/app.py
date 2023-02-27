@@ -92,6 +92,7 @@ def populate(bank, national_identification_number):
     integration_instance = integration(
         db=db
     )
+
     accounts = integration_instance.get_bank_accounts(
         national_identification_number)
     for a in accounts:

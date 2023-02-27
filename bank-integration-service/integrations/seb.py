@@ -2,10 +2,14 @@ from models.BankAccountTransactions import BankAccountTransactions
 from models.BankAccounts import BankAccounts
 from models.BankConnections import BankConnections
 from integrations.template import TemplateProvider
+
+
 import os
 import sys
 import requests
 from uuid import uuid4
+import datetime
+import json
 
 
 integrations_dir = os.getcwd() + "/integrations"
@@ -77,12 +81,15 @@ class SEB(TemplateProvider):
     def create_bank_connection(self, auth_req_id, national_identification_number):
         token_data = get_token_data(auth_req_id)
         new_connection_id = str(uuid4())
+        now = datetime.datetime.now()
         bank_connection = BankConnections(
             id=new_connection_id,
             bank="seb",
             national_identification_number=national_identification_number,
             access_token=token_data["access_token"],
             refresh_token=token_data["refresh_token"],
+            created_at=now,
+            updated_at=now
         )
         self.db.session.add(bank_connection)
         self.db.session.commit()
@@ -103,8 +110,9 @@ class SEB(TemplateProvider):
         )
 
         token_data = res.json()
-        BankConnections.access_token = token_data["access_token"]
-        BankConnections.refresh_token = token_data["refresh_token"]
+        bank_connection.access_token = token_data["access_token"]
+        bank_connection.refresh_token = token_data["refresh_token"]
+        bank_connection.updated_at = datetime.datetime.now()
         self.db.session.commit()
 
         return bank_connection.serialize()
@@ -123,10 +131,11 @@ class SEB(TemplateProvider):
             f"{API_BASE_URL}/{API_ACCOUNTS_ENDPOINT}",
             headers=headers
         )
-
         accounts_data = res.json()
+
         inserted_accounts = []
         for i in accounts_data["accounts"]:
+            now = datetime.datetime.now()
             account = BankAccounts(
                 id=str(uuid4()),
                 external_id=i["resourceId"],
@@ -134,7 +143,9 @@ class SEB(TemplateProvider):
                 bank_connection_id=bank_connection.id,
                 name=i["name"],
                 currency=i["currency"],
-                iban=i["iban"]
+                iban=i["iban"],
+                created_at=now,
+                updated_at=now
             )
             self.db.session.add(account)
             self.db.session.commit()
@@ -162,15 +173,16 @@ class SEB(TemplateProvider):
         )
 
         transactions_data = res.json()
-        inserted_transactions = []
-        for t in transactions_data["transactions"]:
-            transaction = BankAccountTransactions(
-                id=str(uuid4()),
-                external_id=str(t["resourceId"]),
-                bank_account_id=str(bank_account_external_id)
-            )
-            self.db.session.add(transaction)
-            self.db.session.commit()
-            inserted_transactions.append(transaction.serialize())
+        now = datetime.datetime.now()
 
-        return inserted_transactions
+        transaction = BankAccountTransactions(
+            id=str(uuid4()),
+            external_bank_account_id=bank_account_external_id,
+            transactions=json.dumps(transactions_data),
+            created_at=now,
+            updated_at=now
+        )
+        self.db.session.add(transaction)
+        self.db.session.commit()
+
+        return transaction.serialize()
