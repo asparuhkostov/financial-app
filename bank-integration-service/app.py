@@ -117,7 +117,6 @@ def populate(bank, national_identification_number):
 
     accounts = integration_instance.get_bank_accounts(
         national_identification_number)
-    print(accounts)
     for a in accounts:
         integration_instance.get_bank_account_transactions(
             a["external_id"],

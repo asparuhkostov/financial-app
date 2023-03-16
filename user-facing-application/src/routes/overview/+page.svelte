@@ -16,7 +16,6 @@
 				overviewData = res.data;
 			})
 			.catch((e) => {
-				console.log(e);
 				error = "We're experiencing technical difficulties, please try again later.";
 			});
 	}
