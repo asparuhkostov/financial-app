@@ -2,6 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { hash, compare } from 'bcrypt';
 import { sign, verify } from 'jsonwebtoken';
 import { v4 } from 'uuid';
+
 import { dbClient } from './lib/database';
 import BankIntegrationServiceClient from './lib/bank_integration_service';
 
@@ -11,6 +12,8 @@ export class AppService {
     return HttpStatus.OK;
   }
 
+  // TO-DO: move the login & registration paths
+  // into a user module
   async register(
     national_identification_number,
     country_of_residence,
@@ -68,12 +71,12 @@ export class AppService {
         if (result) {
           const auth_cookie = sign(
             {
-              data: { identity: user.national_identification_number },
+              data: { identity: user.id },
               exp: Math.floor(Date.now() / 1000) + 60 * 60,
             },
             process.env.SERVER_SECRET,
           );
-          response.send({ auth_cookie });
+          response.status(HttpStatus.OK).send({ auth_cookie });
         } else {
           response.status(HttpStatus.FORBIDDEN).send();
         }
@@ -81,28 +84,153 @@ export class AppService {
     });
   }
 
-  async get_user_financial_overview(
-    national_identification_number,
-    authorization,
-    response,
-  ) {
+  // TO-DO: move the financial connection & overview paths
+  // into their own module
+  // TO-DO: move authorization 1 layer above,
+  // the controller should handle this
+  async initAuth(authorization, bank, response) {
     const decoded_auth = verify(authorization, process.env.SERVER_SECRET);
-    // TO-DO - move auth into higher level
-    // TO-DO - sanitize headers before using in code
-    if (decoded_auth?.data.identity === national_identification_number) {
-      let res;
+    const id = decoded_auth.data.identity;
+    let res;
+
+    if (id) {
+      // TO-DO: move this client instantiation\
+      // into a separate method - it's being repeated
+      // for every step of the connection process
+      let user = await dbClient.user.findUnique({
+        where: { id },
+      });
+      const national_identification_number =
+        user.national_identification_number;
       const client = new BankIntegrationServiceClient(
         national_identification_number,
       );
-      const query_result = await client.get_financial_overview();
+
+      const query_result = await client.initAuth(bank);
       if (query_result) {
         res = query_result;
       } else {
         res = HttpStatus.INTERNAL_SERVER_ERROR;
       }
-      response.send(res);
     } else {
-      response.status(HttpStatus.FORBIDDEN).send();
+      res = HttpStatus.FORBIDDEN;
     }
+
+    response.send(res);
+  }
+
+  async verifyAuth(authorization, bank, authRequestId, response) {
+    const decoded_auth = verify(authorization, process.env.SERVER_SECRET);
+    const id = decoded_auth.data.identity;
+    let res;
+
+    if (id) {
+      let user = await dbClient.user.findUnique({
+        where: { id },
+      });
+      const national_identification_number =
+        user.national_identification_number;
+      const client = new BankIntegrationServiceClient(
+        national_identification_number,
+      );
+
+      const query_result = await client.verifyAuth(bank, authRequestId);
+      if (query_result) {
+        res = query_result;
+      } else {
+        res = HttpStatus.INTERNAL_SERVER_ERROR;
+      }
+    } else {
+      res = HttpStatus.FORBIDDEN;
+    }
+
+    response.send(res);
+  }
+
+  async connect(authorization, bank, authRequestId, response) {
+    const decoded_auth = verify(authorization, process.env.SERVER_SECRET);
+    const id = decoded_auth.data.identity;
+    let res;
+
+    if (id) {
+      let user = await dbClient.user.findUnique({
+        where: { id },
+      });
+      const national_identification_number =
+        user.national_identification_number;
+      const client = new BankIntegrationServiceClient(
+        national_identification_number,
+      );
+
+      const query_result = await client.connect(bank, authRequestId);
+      if (query_result) {
+        res = query_result;
+      } else {
+        res = HttpStatus.INTERNAL_SERVER_ERROR;
+      }
+    } else {
+      res = HttpStatus.FORBIDDEN;
+    }
+
+    response.send(res);
+  }
+
+  async verifyConnection(authorization, bank, response) {
+    const decoded_auth = verify(authorization, process.env.SERVER_SECRET);
+    const id = decoded_auth.data.identity;
+    let res;
+
+    if (id) {
+      let user = await dbClient.user.findUnique({
+        where: { id },
+      });
+      const national_identification_number =
+        user.national_identification_number;
+      const client = new BankIntegrationServiceClient(
+        national_identification_number,
+      );
+
+      const query_result = await client.verifyConnection(bank);
+      if (query_result) {
+        res = query_result;
+        if (query_result?.is_complete) {
+          client.populateFinancialRecords(bank);
+        }
+      } else {
+        res = HttpStatus.INTERNAL_SERVER_ERROR;
+      }
+    } else {
+      res = HttpStatus.FORBIDDEN;
+    }
+
+    response.send(res);
+  }
+
+  async getFinancialOverview(authorization, response) {
+    const decoded_auth = verify(authorization, process.env.SERVER_SECRET);
+    const id = decoded_auth.data.identity;
+    let res;
+
+    if (id) {
+      let user = await dbClient.user.findUnique({
+        where: { id },
+      });
+      const national_identification_number =
+        user.national_identification_number;
+      const client = new BankIntegrationServiceClient(
+        national_identification_number,
+      );
+
+      const query_result = await client.getFinancialOverview();
+      if (query_result) {
+        res = query_result;
+      } else {
+        res = HttpStatus.INTERNAL_SERVER_ERROR;
+      }
+    } else {
+      res = HttpStatus.FORBIDDEN;
+    }
+
+    response.send(res);
   }
 }

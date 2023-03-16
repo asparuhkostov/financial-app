@@ -38,19 +38,56 @@ export class AppController {
     this.appService.login(national_identification_number, password, response);
   }
 
-  @Get('/financial_overview/:national_identification_number')
-  async financial_overview(
-    @Param() parameters,
-    @Headers() headers,
-    @Res() response,
-  ) {
-    const { national_identification_number } = parameters;
+  @Post('/init_auth')
+  async initAuth(@Headers() headers, @Req() request, @Res() response) {
     const { authorization } = headers;
+    const { bank } = request.body;
 
-    return await this.appService.get_user_financial_overview(
-      national_identification_number,
+    return await this.appService.initAuth(authorization, bank, response);
+  }
+
+  @Post('/verify_auth')
+  async verifyAuth(@Headers() headers, @Req() request, @Res() response) {
+    const { authorization } = headers;
+    const { bank, authRequestId } = request.body;
+
+    return await this.appService.verifyAuth(
       authorization,
+      bank,
+      authRequestId,
       response,
     );
+  }
+
+  @Post('/connect')
+  async connect(@Headers() headers, @Req() request, @Res() response) {
+    const { authorization } = headers;
+    const { bank, authRequestId } = request.body;
+
+    return await this.appService.connect(
+      authorization,
+      bank,
+      authRequestId,
+      response,
+    );
+  }
+
+  @Post('/verify_connection')
+  async verifyConnection(@Headers() headers, @Req() request, @Res() response) {
+    const { authorization } = headers;
+    const { bank } = request.body;
+
+    return await this.appService.verifyConnection(
+      authorization,
+      bank,
+      response,
+    );
+  }
+
+  @Get('/financial_overview')
+  async financialOverview(@Headers() headers, @Res() response) {
+    const { authorization } = headers;
+
+    return await this.appService.getFinancialOverview(authorization, response);
   }
 }

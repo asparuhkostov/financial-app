@@ -44,4 +44,5 @@ class Aggregator:
                     financial_information[a.bank] = [
                         account_data
                     ]
+
         return financial_information

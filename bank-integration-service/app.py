@@ -1,5 +1,6 @@
 from integrations.seb import SEB
 from lib.Aggregator import Aggregator
+from models.BankConnections import BankConnections
 
 
 from flask import Response, request
@@ -13,6 +14,7 @@ import os
 sys.path.append(f'{os.getcwd()}/server')
 sys.path.append(f'{os.getcwd()}/server/integrations')
 sys.path.append(f'{os.getcwd()}/lib')
+sys.path.append(f'{os.getcwd()}/models')
 
 
 integrations_map = {
@@ -28,9 +30,14 @@ def hello_world():
 @app.post("/start_login")
 def start_login():
     request_data = request.json
-    bank = request.json["bank"]
+    bank = request_data["bank"]
     integration = integrations_map[bank]
     integration_instance = integration(db)
+
+    # return {
+    #     "auth_request_id": 'test',
+    #     "bank_id_autostart_token": 'test'
+    # }
 
     return integration_instance.init_auth()
 
@@ -86,6 +93,21 @@ def refresh_bank_connection():
     )
 
 
+@app.post("/verify_connection")
+def verify_connection():
+    request_data = request.json
+    bank = request_data["bank"]
+    national_identification_number = request_data["national_identification_number"]
+    connections = BankConnections.query.filter_by(
+        national_identification_number=national_identification_number,
+        bank=bank
+    ).all()
+    if connections and len(connections):
+        return {"is_complete": True}
+    else:
+        return {"is_complete": False}
+
+
 @app.get("/populate_financial_information_records/<bank>/<national_identification_number>")
 def populate(bank, national_identification_number):
     integration = integrations_map[bank]
@@ -95,6 +117,7 @@ def populate(bank, national_identification_number):
 
     accounts = integration_instance.get_bank_accounts(
         national_identification_number)
+    print(accounts)
     for a in accounts:
         integration_instance.get_bank_account_transactions(
             a["external_id"],
